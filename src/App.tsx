@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { escribirMeta } from './datos/db'
 import { useMeta, useSinEnviar } from './datos/almacen'
-import { haySesion, iniciarSesionConCodigo, nubeConfigurada, useEstadoSync } from './datos/sync'
+import { haySesion, iniciarSesion, nubeConfigurada, useEstadoSync } from './datos/sync'
 import Caja from './pantallas/Caja'
 import Pedidos from './pantallas/Pedidos'
 import Contabilidad from './pantallas/Contabilidad'
@@ -91,34 +91,55 @@ export default function App() {
   )
 }
 
+const CLAVE_CORREO = 'cubarbaros-correo'
+function correoGuardado(): string {
+  try {
+    return localStorage.getItem(CLAVE_CORREO) ?? ''
+  } catch {
+    return ''
+  }
+}
+
 function Entrada() {
-  const [codigo, setCodigo] = useState('')
+  const [correo, setCorreo] = useState(correoGuardado)
+  const [clave, setClave] = useState('')
   const [error, setError] = useState('')
   const [cargando, setCargando] = useState(false)
+  const entrar = async () => {
+    setCargando(true)
+    setError('')
+    const e = await iniciarSesion(correo, clave)
+    setCargando(false)
+    if (e) setError(e)
+    else {
+      try {
+        localStorage.setItem(CLAVE_CORREO, correo.trim().toLowerCase())
+      } catch {
+        /* sin almacenamiento: no pasa nada */
+      }
+    }
+  }
   return (
-    <div className="entrada-pantalla">
+    <form
+      className="entrada-pantalla"
+      onSubmit={(ev) => {
+        ev.preventDefault()
+        if (correo.trim() && clave && !cargando) void entrar()
+      }}
+    >
       <img className="logo-grande" src="/logo.png" alt="Cubárbaros" width={160} height={160} />
       <h1>Cubárbaros Caja</h1>
-      <p className="texto">Escribe el código de acceso para compartir datos entre los celulares.</p>
-      <input className="entrada" type="password" inputMode="text" autoComplete="off" placeholder="Código de acceso" value={codigo} onChange={(e) => setCodigo(e.target.value)} aria-label="Código de acceso" />
+      <p className="texto">Entra con tu correo y contraseña para compartir datos entre los celulares.</p>
+      <input className="entrada" type="email" inputMode="email" autoCapitalize="none" autoCorrect="off" autoComplete="username" placeholder="Correo" value={correo} onChange={(e) => setCorreo(e.target.value)} aria-label="Correo" />
+      <input className="entrada" type="password" autoComplete="current-password" placeholder="Contraseña" value={clave} onChange={(e) => setClave(e.target.value)} aria-label="Contraseña" />
       {error && <p className="error">{error}</p>}
-      <button
-        className="btn btn-principal"
-        disabled={!codigo.trim() || cargando}
-        onClick={async () => {
-          setCargando(true)
-          setError('')
-          const e = await iniciarSesionConCodigo(codigo)
-          setCargando(false)
-          if (e) setError(e)
-        }}
-      >
+      <button className="btn btn-principal" type="submit" disabled={!correo.trim() || !clave || cargando}>
         {cargando ? 'Entrando…' : 'Entrar'}
       </button>
-      <button className="btn btn-sec" onClick={() => escribirMeta('modoLocal', true)}>
+      <button className="btn btn-sec" type="button" onClick={() => escribirMeta('modoLocal', true)}>
         Usar solo en este celular
       </button>
-    </div>
+    </form>
   )
 }
 

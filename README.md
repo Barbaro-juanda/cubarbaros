@@ -12,7 +12,7 @@ Es una app web instalable (PWA) pensada para celular. Funciona **sin internet** 
 - Si dos celulares cambian lo mismo, **gana el cambio más reciente**.
 - El indicador del encabezado dice: **Sincronizado**, **N sin enviar**, **Sin conexión** o **Solo en este celular**.
 - **Letra del celular:** cada celular elige una letra distinta (A, B, C) la primera vez. Los pedidos se numeran **A-1, A-2… B-1, B-2…** así dos celulares sin señal nunca repiten número.
-- **Acceso:** el cajero escribe un solo código. No crea cuentas. (Detrás hay un usuario compartido de Supabase cuya contraseña es ese código.)
+- **Acceso:** cada persona (tú, el socio, el cajero) tiene su propio correo y contraseña, que creas tú en Supabase. Nadie puede crearse una cuenta solo.
 
 ## 2. Correrlo en tu computador
 
@@ -38,9 +38,8 @@ npm run preview   # prueba la versión publicada localmente
 1. Entra a [supabase.com](https://supabase.com) con tu cuenta y crea un proyecto nuevo (apunta la contraseña de la base de datos).
 2. Ve a **SQL Editor → New query**, pega **todo** el contenido de [`supabase/crear_tablas.sql`](supabase/crear_tablas.sql) y pulsa **Run**. Crea la tabla `registros` y la deja cerrada a quien no tenga sesión.
 3. **Cierra los registros públicos:** en **Authentication** desactiva la opción de que cualquiera pueda crear cuentas nuevas (el nombre exacto puede variar: busca algo como *Allow new users to sign up*). Si no lo haces, cualquiera con la dirección de tu proyecto podría registrarse y entrar.
-4. **Authentication → Users → Add user → Create new user**:
-   - Email: `caja@cubarbaros.app`
-   - Password: **el código de acceso** (que sea de 8 caracteres o más, por ejemplo 8 números que no sean fáciles de adivinar).
+4. **Authentication → Users → Add user → Create new user**, una vez por cada persona que va a usar la app:
+   - Email y Password de esa persona (contraseña de 8 caracteres o más).
    - Marca **Auto Confirm User**.
 5. En los ajustes del proyecto, sección **API** (o *API Keys*), copia la **Project URL** y la clave pública (**anon** / **publishable**). La clave pública está pensada para ir dentro de la app; la clave secreta (**service_role**) **nunca** debe ponerse en la app.
 
@@ -52,7 +51,6 @@ Variables que necesita la app (ver [`.env.example`](.env.example)):
 |---|---|
 | `VITE_SUPABASE_URL` | La Project URL |
 | `VITE_SUPABASE_ANON_KEY` | La clave pública anon/publishable |
-| `VITE_SUPABASE_EMAIL` | (opcional) el correo del usuario, por defecto `caja@cubarbaros.app` |
 
 Para probar en tu computador, copia `.env.example` como `.env` y llénalo. **Nunca subas el `.env` a GitHub** (ya está ignorado).
 
@@ -85,11 +83,11 @@ Abre la dirección de Netlify en el celular **con internet** y:
 - **Android (Chrome):** menú ⋮ → **Instalar aplicación** (o *Añadir a la pantalla de inicio*).
 - **iPhone (Safari):** botón Compartir → **Añadir a pantalla de inicio**.
 
-Abre la app desde el ícono, escribe el código, elige la letra del celular (cajero: **A**, tú: **B**) y listo. La primera vez necesita internet para que descargue todo; después abre sin señal.
+Abre la app desde el ícono, entra con tu correo y contraseña, elige la letra del celular (cajero: **A**, tú: **B**) y listo. La primera vez necesita internet para que descargue todo; después abre sin señal.
 
 ## 6. Prueba completa antes del evento (hazla el día anterior)
 
-1. **Con internet,** en 2 celulares: entra con el código y elige letras distintas.
+1. **Con internet,** en 2 celulares: entra con tu correo y contraseña y elige letras distintas.
 2. En Ajustes revisa el menú y los precios (las bebidas aún no tienen precio: agrégalas ahí). Pon la **base de caja** y el **% de reparto**.
 3. Cobra un pedido en **efectivo** con $20.000 y verifica el cambio. Haz uno por **transferencia** y uno **mixto**.
 4. Mira que el pedido del celular A aparezca en el celular B (máx. ~10 s).
@@ -104,7 +102,7 @@ Abre la app desde el ícono, escribe el código, elige la letra del celular (caj
 
 - Si falla la nube, los pedidos siguen guardados en el celular. En **Ajustes → Copiar copia de seguridad (JSON)** puedes copiar todo y pegarlo en una nota o WhatsApp.
 - En Contabilidad, **Copiar CSV** exporta pedidos y gastos para abrir en Excel o Google Sheets.
-- Cualquiera con el código puede ver y cambiar los datos. Cámbialo después del evento (Supabase → Authentication → Users).
+- Cualquiera que tenga una cuenta puede ver y cambiar los datos. Después del evento borra las cuentas que ya no necesites (Supabase → Authentication → Users).
 
 ## 8. Avisos legales y de riesgo
 

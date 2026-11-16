@@ -104,7 +104,7 @@ export default function Ajustes({ onEntrarCodigo }: { onEntrarCodigo: () => void
                 </>
               ) : (
                 <button className="btn btn-principal" onClick={onEntrarCodigo}>
-                  Entrar con código
+                  Entrar con correo
                 </button>
               )}
             </div>

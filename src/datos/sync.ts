@@ -6,7 +6,6 @@ import { debeAplicarRemoto } from '../logica/contabilidad'
 
 const URL = import.meta.env.VITE_SUPABASE_URL as string | undefined
 const CLAVE = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined
-const CORREO = (import.meta.env.VITE_SUPABASE_EMAIL as string | undefined) || 'caja@cubarbaros.app'
 
 /** ¿La app fue publicada con los datos de Supabase? Si no, funciona solo en este celular. */
 export const nubeConfigurada = Boolean(URL && CLAVE)
@@ -36,12 +35,12 @@ export const useEstadoSync = () =>
     () => estado,
   )
 
-export async function iniciarSesionConCodigo(codigo: string): Promise<string | null> {
+export async function iniciarSesion(correo: string, clave: string): Promise<string | null> {
   if (!supabase) return 'La nube no está configurada en esta versión.'
-  const { error } = await supabase.auth.signInWithPassword({ email: CORREO, password: codigo.trim() })
+  const { error } = await supabase.auth.signInWithPassword({ email: correo.trim().toLowerCase(), password: clave })
   if (error) {
     if (!navigator.onLine || /fetch|network/i.test(error.message)) return 'No hay internet. Necesitas señal para entrar la primera vez.'
-    return 'Código incorrecto.'
+    return 'Correo o contraseña incorrectos.'
   }
   await escribirMeta('sesionAlgunaVez', true)
   poner({ conectado: true, error: '' })
@@ -136,7 +135,7 @@ export async function sincronizar(): Promise<void> {
     poner({ ultimoExito: Date.now(), error: '' })
   } catch (e: any) {
     const msg = String(e?.message ?? e)
-    poner({ error: /jwt|auth|token/i.test(msg) ? 'Sesión vencida: vuelve a escribir el código.' : msg })
+    poner({ error: /jwt|auth|token/i.test(msg) ? 'Sesión vencida: vuelve a entrar con tu correo y contraseña.' : msg })
   } finally {
     enCurso = false
     poner({ sincronizando: false })
