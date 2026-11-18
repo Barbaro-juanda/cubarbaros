@@ -8,6 +8,8 @@ import Contabilidad from './pantallas/Contabilidad'
 import Ajustes from './pantallas/Ajustes'
 import { Modal } from './componentes/ui'
 
+import { PERSONAS } from './logica/tipos'
+
 type Seccion = 'caja' | 'pedidos' | 'conta' | 'ajustes'
 
 export default function App() {
@@ -46,7 +48,7 @@ export default function App() {
         <div className="titulo-app">
           <span className="nombre">Cubárbaros Caja</span>
           <span className="frase">
-            Celular {letra}
+            Celular de {letra}
             <span className={'insignia ' + badge.clase} role="status">
               {badge.texto}
             </span>
@@ -145,12 +147,12 @@ function Entrada() {
 
 function ElegirLetra() {
   return (
-    <Modal titulo="¿Qué celular es este?" cerrable={false}>
-      <p className="texto">Elige una letra distinta para cada celular. Sirve para que los números de pedido no se repitan (A-1, B-1…). Cajero: A. Dueño: B.</p>
+    <Modal titulo="¿De quién es este celular?" cerrable={false}>
+      <p className="texto">Elige tu nombre. Sirve para que los números de pedido no se repitan (Jero-1, Juanda-1, Anye-1…). Cada celular debe tener un nombre distinto.</p>
       <div className="atajos">
-        {['A', 'B', 'C'].map((l) => (
-          <button key={l} className="btn btn-chip grande-letra" onClick={() => escribirMeta('dispositivo', l)}>
-            {l}
+        {PERSONAS.map((n) => (
+          <button key={n} className="btn btn-chip grande-letra" onClick={() => escribirMeta('dispositivo', n)}>
+            {n}
           </button>
         ))}
       </div>

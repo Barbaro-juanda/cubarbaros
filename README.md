@@ -11,7 +11,7 @@ Es una app web instalable (PWA) pensada para celular. Funciona **sin internet** 
 - Cada cambio queda en una "cola de envío". Cuando hay internet se sube a **Supabase** (una base de datos en internet) y se bajan los cambios de los otros celulares, cada 8 segundos.
 - Si dos celulares cambian lo mismo, **gana el cambio más reciente**.
 - El indicador del encabezado dice: **Sincronizado**, **N sin enviar**, **Sin conexión** o **Solo en este celular**.
-- **Letra del celular:** cada celular elige una letra distinta (A, B, C) la primera vez. Los pedidos se numeran **A-1, A-2… B-1, B-2…** así dos celulares sin señal nunca repiten número.
+- **Nombre del celular:** cada celular elige su dueño (**Jero, Juanda o Anye**) la primera vez. Los pedidos se numeran **Jero-1, Jero-2… Juanda-1…** así dos celulares sin señal nunca repiten número.
 - **Acceso:** cada persona (tú, el socio, el cajero) tiene su propio correo y contraseña, que creas tú en Supabase. Nadie puede crearse una cuenta solo.
 
 ## 2. Correrlo en tu computador
@@ -83,20 +83,20 @@ Abre la dirección de Netlify en el celular **con internet** y:
 - **Android (Chrome):** menú ⋮ → **Instalar aplicación** (o *Añadir a la pantalla de inicio*).
 - **iPhone (Safari):** botón Compartir → **Añadir a pantalla de inicio**.
 
-Abre la app desde el ícono, entra con tu correo y contraseña, elige la letra del celular (cajero: **A**, tú: **B**) y listo. La primera vez necesita internet para que descargue todo; después abre sin señal.
+Abre la app desde el ícono, entra con tu correo y contraseña, elige de quién es el celular (Jero, Juanda o Anye) y listo. La primera vez necesita internet para que descargue todo; después abre sin señal.
 
 ## 6. Prueba completa antes del evento (hazla el día anterior)
 
-1. **Con internet,** en 2 celulares: entra con tu correo y contraseña y elige letras distintas.
+1. **Con internet,** en 2 celulares: entra con tu correo y contraseña y elige nombres distintos.
 2. En Ajustes revisa el menú y los precios (las bebidas aún no tienen precio: agrégalas ahí). Pon la **base de caja** y el **% de reparto**.
 3. Cobra un pedido en **efectivo** con $20.000 y verifica el cambio. Haz uno por **transferencia** y uno **mixto**.
-4. Mira que el pedido del celular A aparezca en el celular B (máx. ~10 s).
+4. Mira que el pedido de un celular aparezca en el otro (máx. ~10 s).
 5. **Modo avión** en un celular: cobra 2 pedidos. Debe decir "2 sin enviar". Quita el modo avión: debe pasar a "Sincronizado" y el otro celular debe verlos.
 6. Pasa un pedido por Pendiente → Preparando → Listo → Entregado, usa **Deshacer**, **Anula** uno y **restáuralo**.
-7. En **Pedidos**, prueba el **buscador**: escribe un nombre de la nota, un número (A-3), un monto (35.800) o un método (nequi); borra con la ✕.
+7. En **Pedidos**, prueba el **buscador**: escribe un nombre de la nota, un número (Jero-3), un monto (35.800) o un método (nequi); borra con la ✕.
 8. En Contabilidad: registra el stand ($150.000), un gasto con plata de la caja, escribe el efectivo contado y revisa el **cuadre**. Copia el **resumen de WhatsApp** y pégalo en un chat.
 9. Cierra la app del todo y ábrela con el celular en modo avión: debe abrir y mostrar los pedidos.
-10. **Ajustes → Borrar datos de prueba** (escribe BORRAR). Verifica que ambos celulares quedan vacíos y que la numeración vuelve a A-1.
+10. **Ajustes → Borrar datos de prueba** (escribe BORRAR). Verifica que ambos celulares quedan vacíos y que la numeración vuelve a 1.
 11. El día del evento, antes de abrir: revisa que ambos celulares digan "Sincronizado", que la base de caja esté puesta y la batería/cargador.
 
 ## 7. Seguridad y respaldo

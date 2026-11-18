@@ -92,3 +92,6 @@ export const CONFIG_INICIAL: Config = {
   efectivoContado: null,
   borradoEn: 0,
 }
+
+/** Quién usa cada celular. Su nombre va en el número de pedido (Jero-1, Juanda-1…). */
+export const PERSONAS = ['Jero', 'Juanda', 'Anye'] as const

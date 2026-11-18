@@ -66,7 +66,7 @@ hr { border: 0; border-top: 2px dashed rgba(51, 18, 7, 0.25); margin: 10px 0; }
 .btn-peq { width: auto; flex: 0 0 auto; font-size: 20px; }
 .btn-chip { width: auto; min-height: 48px; padding: 6px 16px; font-size: 20px; background: var(--blanco); color: var(--cafe); border: 2px solid var(--cafe); border-radius: 999px; }
 .btn-chip.sel { background: var(--azul); color: var(--crema); border-color: var(--azul); }
-.grande-letra { font-size: 40px; min-width: 80px; min-height: 80px; }
+.grande-letra { font-size: 32px; min-height: 72px; padding: 6px 22px; }
 .enlace-peligro { min-height: 48px; width: 100%; font-size: 18px; color: var(--rojo); text-decoration: underline; }
 .fila-botones { display: flex; gap: 10px; align-items: stretch; margin-top: 10px; }
 .fila-botones.col { flex-direction: column; }

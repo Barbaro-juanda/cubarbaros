@@ -3,7 +3,7 @@ import { guardarConfig, useConfig, useMeta } from '../datos/almacen'
 import { aplicarBorradoLocal, cerrarSesion, nubeConfigurada, sincronizar, useEstadoSync } from '../datos/sync'
 import { escribirMeta, exportarCopiaLocal } from '../datos/db'
 import { formatoCOP, leerMonto } from '../logica/dinero'
-import type { Producto } from '../logica/tipos'
+import { PERSONAS, type Producto } from '../logica/tipos'
 import { CampoMonto, Confirmar, Modal, copiarTexto } from '../componentes/ui'
 
 export default function Ajustes({ onEntrarCodigo }: { onEntrarCodigo: () => void }) {
@@ -74,15 +74,15 @@ export default function Ajustes({ onEntrarCodigo }: { onEntrarCodigo: () => void
 
       <section className="tarjeta">
         <h3>Este celular</h3>
-        <div className="campo-et">Letra del celular (para numerar pedidos sin que se repitan)</div>
+        <div className="campo-et">¿De quién es este celular? (para numerar pedidos sin que se repitan)</div>
         <div className="atajos">
-          {['A', 'B', 'C'].map((l) => (
+          {PERSONAS.map((l) => (
             <button key={l} className={'btn btn-chip' + (letra === l ? ' sel' : '')} onClick={() => escribirMeta('dispositivo', l)}>
               {l}
             </button>
           ))}
         </div>
-        <p className="pequeno">Cada celular debe tener una letra distinta. El cajero: A. Yo: B.</p>
+        <p className="pequeno">Cada celular debe tener un nombre distinto.</p>
       </section>
 
       <section className="tarjeta">
