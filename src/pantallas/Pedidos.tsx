@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { anularPedido, cambiarEstado, usePedidos } from '../datos/almacen'
+import { buscarPedidos } from '../logica/busqueda'
 import { formatoCOP } from '../logica/dinero'
 import { fechaHoraColombia } from '../logica/exportar'
 import { ESTADOS, type EstadoPedido, type Pedido } from '../logica/tipos'
@@ -14,19 +15,49 @@ export default function Pedidos() {
   const [filtro, setFiltro] = useState<Filtro>('todos')
   const [anulando, setAnulando] = useState<Pedido | null>(null)
 
-  const activos = useMemo(() => pedidos.filter((p) => !p.anulado), [pedidos])
-  const cuenta = (f: Filtro) => (f === 'todos' ? activos.length : f === 'anulados' ? pedidos.length - activos.length : activos.filter((p) => p.estado === f).length)
+  const [consulta, setConsulta] = useState('')
+  const buscando = consulta.trim().length > 0
+  // Primero se busca; los contadores y la lista salen de lo que coincide.
+  const coinciden = useMemo(() => buscarPedidos(pedidos, consulta), [pedidos, consulta])
+  const activos = useMemo(() => coinciden.filter((p) => !p.anulado), [coinciden])
+  // Al buscar, "Todos" incluye los anulados para que no se pierda ninguno.
+  const cuenta = (f: Filtro) =>
+    f === 'todos' ? (buscando ? coinciden.length : activos.length) : f === 'anulados' ? coinciden.length - activos.length : activos.filter((p) => p.estado === f).length
   const lista = useMemo(
     () =>
-      pedidos
-        .filter((p) => (filtro === 'anulados' ? p.anulado : filtro === 'todos' ? !p.anulado : !p.anulado && p.estado === filtro))
+      coinciden
+        .filter((p) => (filtro === 'anulados' ? p.anulado : filtro === 'todos' ? buscando || !p.anulado : !p.anulado && p.estado === filtro))
         .sort((a, b) => b.creadoEn - a.creadoEn),
-    [pedidos, filtro],
+    [coinciden, filtro, buscando],
   )
   const filtros: { f: Filtro; t: string }[] = [{ f: 'todos', t: 'Todos' }, ...ESTADOS.map((e) => ({ f: e as Filtro, t: NOMBRE[e] })), { f: 'anulados', t: 'Anulados' }]
 
   return (
     <div className="pantalla">
+      <div className="buscador">
+        <input
+          className="entrada buscador-campo"
+          type="text"
+          inputMode="search"
+          enterKeyHint="search"
+          autoComplete="off"
+          autoCorrect="off"
+          placeholder="Buscar: número, cliente, nota, monto…"
+          value={consulta}
+          onChange={(e) => setConsulta(e.target.value)}
+          aria-label="Buscar pedidos"
+        />
+        {consulta && (
+          <button className="btn-icono buscador-borrar" onClick={() => setConsulta('')} aria-label="Borrar búsqueda">
+            ✕
+          </button>
+        )}
+      </div>
+      {buscando && (
+        <p className="pequeno resultados" role="status">
+          {coinciden.length === 0 ? 'Ningún pedido coincide.' : `${coinciden.length} ${coinciden.length === 1 ? 'pedido encontrado' : 'pedidos encontrados'}`}
+        </p>
+      )}
       <div className="filtros">
         {filtros.map(({ f, t }) => (
           <button key={f} className={'btn btn-chip' + (filtro === f ? ' sel' : '')} onClick={() => setFiltro(f)}>
@@ -35,7 +66,7 @@ export default function Pedidos() {
         ))}
       </div>
 
-      {lista.length === 0 && <p className="vacio">No hay pedidos aquí.</p>}
+      {lista.length === 0 && <p className="vacio">{buscando ? 'Nada con esa búsqueda en este filtro.' : 'No hay pedidos aquí.'}</p>}
       {lista.map((p) => {
         const i = ESTADOS.indexOf(p.estado)
         return (

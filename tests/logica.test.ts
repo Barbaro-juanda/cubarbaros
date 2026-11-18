@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { buscarPedidos } from '../src/logica/busqueda'
 import { cobrarEfectivo, cobrarMixto, cobrarTransferencia, totalPedido } from '../src/logica/cobro'
 import { debeAplicarRemoto, horaColombia, resumir, ventasPorHora } from '../src/logica/contabilidad'
 import { formatoCOP, leerMonto, repartir } from '../src/logica/dinero'
@@ -195,5 +196,52 @@ describe('sincronización y exportación', () => {
     const csv = generarCSV([p], [gasto(5000, 'caja')])
     expect(csv).toContain('"sin ""pepinillos"", ok"')
     expect(csv).toContain('GASTOS')
+  })
+})
+
+describe('búsqueda de pedidos', () => {
+  const a = efectivo(2, 50000, { numero: 'A-12', nota: 'Juan, sin pepinillos' })
+  const b = pedido(1, cobrarTransferencia(PRECIO, 'Nequi', 'ref-9981').pago!, { numero: 'B-3', nota: '', estado: 'listo' })
+  const c = efectivo(1, 20000, { numero: 'A-13', nota: 'Mamá de Sofía', anulado: true })
+  const todos = [a, b, c]
+  const nums = (r: Pedido[]) => r.map((p) => p.numero)
+
+  it('sin texto devuelve todos', () => {
+    expect(buscarPedidos(todos, '')).toHaveLength(3)
+    expect(buscarPedidos(todos, '   ')).toHaveLength(3)
+  })
+  it('encuentra por número, con o sin letra', () => {
+    expect(nums(buscarPedidos(todos, 'a-12'))).toEqual(['A-12'])
+    expect(nums(buscarPedidos(todos, 'b-3'))).toEqual(['B-3'])
+    expect(nums(buscarPedidos(todos, '13'))).toEqual(['A-13'])
+  })
+  it('encuentra por nota o nombre, sin importar mayúsculas ni tildes', () => {
+    expect(nums(buscarPedidos(todos, 'JUAN'))).toEqual(['A-12'])
+    expect(nums(buscarPedidos(todos, 'mama'))).toEqual(['A-13'])
+    expect(nums(buscarPedidos(todos, 'sofia'))).toEqual(['A-13'])
+  })
+  it('encuentra por producto, estado, método, canal y referencia', () => {
+    expect(buscarPedidos(todos, 'sandwich')).toHaveLength(3)
+    expect(nums(buscarPedidos(todos, 'listo'))).toEqual(['B-3'])
+    expect(nums(buscarPedidos(todos, 'anulado'))).toEqual(['A-13'])
+    expect(nums(buscarPedidos(todos, 'nequi'))).toEqual(['B-3'])
+    expect(nums(buscarPedidos(todos, 'transferencia'))).toEqual(['B-3'])
+    expect(nums(buscarPedidos(todos, '9981'))).toEqual(['B-3'])
+  })
+  it('encuentra por total, escrito de varias formas', () => {
+    expect(nums(buscarPedidos(todos, '35800'))).toEqual(['A-12'])
+    expect(nums(buscarPedidos(todos, '35.800'))).toEqual(['A-12'])
+    expect(nums(buscarPedidos(todos, '$35.800'))).toEqual(['A-12'])
+  })
+  it('encuentra por hora', () => {
+    expect(buscarPedidos(todos, '12:00')).toHaveLength(3)
+    expect(buscarPedidos(todos, '03:00')).toHaveLength(0)
+  })
+  it('todas las palabras deben coincidir', () => {
+    expect(nums(buscarPedidos(todos, 'a-12 juan'))).toEqual(['A-12'])
+    expect(buscarPedidos(todos, 'a-12 sofia')).toHaveLength(0)
+  })
+  it('sin coincidencias devuelve vacío', () => {
+    expect(buscarPedidos(todos, 'zzzz')).toEqual([])
   })
 })

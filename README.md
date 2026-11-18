@@ -93,10 +93,11 @@ Abre la app desde el ícono, entra con tu correo y contraseña, elige la letra d
 4. Mira que el pedido del celular A aparezca en el celular B (máx. ~10 s).
 5. **Modo avión** en un celular: cobra 2 pedidos. Debe decir "2 sin enviar". Quita el modo avión: debe pasar a "Sincronizado" y el otro celular debe verlos.
 6. Pasa un pedido por Pendiente → Preparando → Listo → Entregado, usa **Deshacer**, **Anula** uno y **restáuralo**.
-7. En Contabilidad: registra el stand ($150.000), un gasto con plata de la caja, escribe el efectivo contado y revisa el **cuadre**. Copia el **resumen de WhatsApp** y pégalo en un chat.
-8. Cierra la app del todo y ábrela con el celular en modo avión: debe abrir y mostrar los pedidos.
-9. **Ajustes → Borrar datos de prueba** (escribe BORRAR). Verifica que ambos celulares quedan vacíos y que la numeración vuelve a A-1.
-10. El día del evento, antes de abrir: revisa que ambos celulares digan "Sincronizado", que la base de caja esté puesta y la batería/cargador.
+7. En **Pedidos**, prueba el **buscador**: escribe un nombre de la nota, un número (A-3), un monto (35.800) o un método (nequi); borra con la ✕.
+8. En Contabilidad: registra el stand ($150.000), un gasto con plata de la caja, escribe el efectivo contado y revisa el **cuadre**. Copia el **resumen de WhatsApp** y pégalo en un chat.
+9. Cierra la app del todo y ábrela con el celular en modo avión: debe abrir y mostrar los pedidos.
+10. **Ajustes → Borrar datos de prueba** (escribe BORRAR). Verifica que ambos celulares quedan vacíos y que la numeración vuelve a A-1.
+11. El día del evento, antes de abrir: revisa que ambos celulares digan "Sincronizado", que la base de caja esté puesta y la batería/cargador.
 
 ## 7. Seguridad y respaldo
 
