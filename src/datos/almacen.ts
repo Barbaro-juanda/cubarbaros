@@ -1,8 +1,11 @@
 import { liveQuery } from 'dexie'
 import { useEffect, useState } from 'react'
 import { db, leerMeta, type Registro } from './db'
-import { CONFIG_INICIAL, type Config, type Gasto, type EstadoPedido, type LineaPedido, type Pago, type Pedido } from '../logica/tipos'
+import { CONFIG_INICIAL, NOMBRE_ESTADO, type Cambio, type Config, type Gasto, type EstadoPedido, type LineaPedido, type Pago, type Pedido } from '../logica/tipos'
 import { totalPedido } from '../logica/cobro'
+import { formatoCOP } from '../logica/dinero'
+import { conCambio } from '../logica/historial'
+import { numerarPedidos } from '../logica/numeracion'
 
 export function useLive<T>(consulta: () => T | Promise<T>, inicial: T): T {
   const [valor, setValor] = useState<T>(inicial)
@@ -24,6 +27,32 @@ export function useConfig(): Config {
   return useLive(leerConfig, CONFIG_INICIAL)
 }
 
+export interface EntradaHistorial extends Cambio {
+  /** A qué se refiere: "Pedido #3", "Gasto" o "Ajustes". */
+  sobre: string
+}
+
+/** Todos los cambios de todos los celulares, el más reciente primero. */
+export const useHistorial = () =>
+  useLive(async () => {
+    const regs = await db.registros.toArray()
+    const orden = numerarPedidos(regs.filter((r) => r.tipo === 'pedido').map((r) => r.datos as Pedido))
+    const out: EntradaHistorial[] = []
+    for (const r of regs) {
+      const hist = r.datos?.historial as Cambio[] | undefined
+      if (!hist?.length) continue
+      const sobre = r.tipo === 'pedido' ? `Pedido #${orden.get(r.id) ?? '?'}` : r.tipo === 'gasto' ? 'Gasto' : 'Ajustes'
+      for (const c of hist) out.push({ ...c, sobre })
+    }
+    return out.sort((a, b) => b.ts - a.ts).slice(0, 300)
+  }, [] as EntradaHistorial[])
+
+/** El número que se ve en pantalla para un pedido (1, 2, 3… por hora de cobro). */
+export async function numeroVisible(id: string): Promise<number> {
+  const regs = await db.registros.where('tipo').equals('pedido').toArray()
+  return numerarPedidos(regs.map((r) => r.datos as Pedido)).get(id) ?? 0
+}
+
 export const useSinEnviar = () => useLive(() => db.registros.where('sucio').equals(1).count(), 0)
 /** Devuelve `undefined` mientras carga y luego el valor guardado (o `porDefecto`). */
 export const useMeta = <T,>(clave: string, porDefecto: T) => useLive<T | undefined>(() => leerMeta<T>(clave, porDefecto), undefined)
@@ -34,6 +63,8 @@ export async function leerConfig(): Promise<Config> {
 }
 
 const nuevoId = () => crypto.randomUUID()
+const quienSoy = () => leerMeta<string>('dispositivo', '?')
+const anotacion = async (texto: string, clave?: string): Promise<Cambio> => ({ ts: Date.now(), quien: await quienSoy(), texto, clave })
 
 type Aviso = () => void
 let avisarCambio: Aviso = () => {}
@@ -49,13 +80,15 @@ async function guardarRegistro(tipo: Registro['tipo'], id: string, datos: any, b
   avisarCambio()
 }
 
-export async function guardarConfig(parcial: Partial<Config>) {
+/** `cambio` es lo que se anota en el historial (con `clave` para juntar cambios seguidos del mismo tipo). */
+export async function guardarConfig(parcial: Partial<Config>, cambio?: { texto: string; clave?: string }) {
   const actual = await leerConfig()
-  await guardarRegistro('config', 'config', { ...actual, ...parcial })
+  const historial = cambio ? conCambio(actual.historial, await anotacion(cambio.texto, cambio.clave)) : actual.historial
+  await guardarRegistro('config', 'config', { ...actual, ...parcial, historial })
 }
 
 export async function crearPedido(lineas: LineaPedido[], nota: string, pago: Pago): Promise<Pedido> {
-  const dispositivo = await leerMeta<string>('dispositivo', 'A')
+  const dispositivo = await leerMeta<string>('dispositivo', '?')
   const id = nuevoId()
   const ahora = Date.now()
   // La secuencia se reserva dentro de una transacción para que nunca se repita en este celular.
@@ -75,6 +108,7 @@ export async function crearPedido(lineas: LineaPedido[], nota: string, pago: Pag
       estado: 'pendiente',
       anulado: false,
       pago,
+      historial: [{ ts: ahora, quien: dispositivo, texto: `Creó el pedido · ${formatoCOP(totalPedido(lineas))} · ${pago.metodo}` }],
     }
     await db.registros.put({ id, tipo: 'pedido', datos: p, actualizadoEn: ahora, sucio: 1, borrado: 0 })
     return p
@@ -83,19 +117,28 @@ export async function crearPedido(lineas: LineaPedido[], nota: string, pago: Pag
   return pedido
 }
 
-async function cambiarPedido(id: string, cambio: Partial<Pedido>) {
+async function cambiarPedido(id: string, cambio: Partial<Pedido>, texto: string) {
   const r = await db.registros.get(id)
   if (!r) return
-  await guardarRegistro('pedido', id, { ...r.datos, ...cambio })
+  const historial = conCambio(r.datos.historial, await anotacion(texto))
+  await guardarRegistro('pedido', id, { ...r.datos, ...cambio, historial })
 }
-export const cambiarEstado = (id: string, estado: EstadoPedido) => cambiarPedido(id, { estado })
-export const anularPedido = (id: string, anulado: boolean) => cambiarPedido(id, { anulado })
+export async function cambiarEstado(id: string, estado: EstadoPedido) {
+  const r = await db.registros.get(id)
+  if (!r) return
+  const antes = NOMBRE_ESTADO[r.datos.estado as EstadoPedido] ?? r.datos.estado
+  await cambiarPedido(id, { estado }, `Estado: ${antes} → ${NOMBRE_ESTADO[estado]}`)
+}
+export const anularPedido = (id: string, anulado: boolean) => cambiarPedido(id, { anulado }, anulado ? 'Anuló el pedido' : 'Restauró el pedido')
 
 export async function agregarGasto(g: Omit<Gasto, 'id' | 'creadoEn'>) {
   const id = nuevoId()
-  await guardarRegistro('gasto', id, { ...g, id, creadoEn: Date.now() })
+  const historial = conCambio(undefined, await anotacion(`Registró el gasto: ${g.concepto} · ${formatoCOP(g.monto)}`))
+  await guardarRegistro('gasto', id, { ...g, id, creadoEn: Date.now(), historial })
 }
 export async function borrarGasto(id: string) {
   const r = await db.registros.get(id)
-  if (r) await guardarRegistro('gasto', id, r.datos, 1)
+  if (!r) return
+  const historial = conCambio(r.datos.historial, await anotacion(`Borró el gasto: ${r.datos.concepto} · ${formatoCOP(r.datos.monto)}`))
+  await guardarRegistro('gasto', id, { ...r.datos, historial }, 1)
 }

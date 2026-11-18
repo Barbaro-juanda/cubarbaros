@@ -60,7 +60,7 @@ export default function Contabilidad() {
         <Fila t="+ Efectivo neto de ventas" v={formatoCOP(r.efectivoNeto)} />
         <Fila t="− Gastos pagados de la caja" v={formatoCOP(r.gastosPorOrigen.caja)} />
         <Fila t="Efectivo esperado" v={formatoCOP(r.efectivoEsperado)} grande />
-        <CampoMonto etiqueta="Efectivo contado" valor={cfg.efectivoContado ?? 0} onCambio={(n) => guardarConfig({ efectivoContado: n || null })} />
+        <CampoMonto etiqueta="Efectivo contado" valor={cfg.efectivoContado ?? 0} onCambio={(n) => guardarConfig({ efectivoContado: n || null }, { texto: n ? `Contó el efectivo: ${formatoCOP(n)}` : 'Borró el efectivo contado', clave: 'contado' })} />
         {r.diferenciaCuadre !== null && (
           <div className={'cuadre ' + (r.diferenciaCuadre === 0 ? 'ok' : 'mal')}>
             {r.diferenciaCuadre === 0 ? 'Cuadra exacto ✓' : r.diferenciaCuadre > 0 ? `Sobran ${formatoCOP(r.diferenciaCuadre)}` : `Faltan ${formatoCOP(-r.diferenciaCuadre)}`}

@@ -5,6 +5,7 @@ import { escribirMeta, exportarCopiaLocal } from '../datos/db'
 import { formatoCOP, leerMonto } from '../logica/dinero'
 import { PERSONAS, type Producto } from '../logica/tipos'
 import { CampoMonto, Confirmar, Modal, copiarTexto } from '../componentes/ui'
+import Historial from './Historial'
 
 export default function Ajustes({ onEntrarCodigo }: { onEntrarCodigo: () => void }) {
   const cfg = useConfig()
@@ -45,7 +46,7 @@ export default function Ajustes({ onEntrarCodigo }: { onEntrarCodigo: () => void
             className="btn btn-principal"
             disabled={!sucio || !menuValido}
             onClick={async () => {
-              await guardarConfig({ menu: menu.map((p) => ({ ...p, nombre: p.nombre.trim() })) })
+              await guardarConfig({ menu: menu.map((p) => ({ ...p, nombre: p.nombre.trim() })) }, { texto: 'Editó el menú', clave: 'menu' })
               setBorrador(null)
               aviso('Menú guardado')
             }}
@@ -59,14 +60,14 @@ export default function Ajustes({ onEntrarCodigo }: { onEntrarCodigo: () => void
 
       <section className="tarjeta">
         <h3>Caja y reparto</h3>
-        <CampoMonto etiqueta="Base inicial de efectivo" valor={cfg.baseCaja} onCambio={(n) => guardarConfig({ baseCaja: n })} />
+        <CampoMonto etiqueta="Base inicial de efectivo" valor={cfg.baseCaja} onCambio={(n) => guardarConfig({ baseCaja: n }, { texto: `Cambió la base de caja a ${formatoCOP(n)}`, clave: 'base' })} />
         <label className="campo">
           <span className="campo-et">Porcentaje para mí (dueño) · propuesta, ajustable</span>
           <input
             className="entrada"
             inputMode="numeric"
             value={String(cfg.porcentajeDueno)}
-            onChange={(e) => guardarConfig({ porcentajeDueno: Math.min(100, leerMonto(e.target.value)) })}
+            onChange={(e) => guardarConfig({ porcentajeDueno: Math.min(100, leerMonto(e.target.value)) }, { texto: `Cambió el reparto: ${Math.min(100, leerMonto(e.target.value))}% para el dueño`, clave: 'pct' })}
           />
         </label>
         <p className="pequeno">Socio: {100 - cfg.porcentajeDueno}%</p>
@@ -130,6 +131,8 @@ export default function Ajustes({ onEntrarCodigo }: { onEntrarCodigo: () => void
         </button>
       </section>
 
+      <HistorialEscondido />
+
       {msg && <div className="toast">{msg}</div>}
       {borrando && <BorrarDatos onCancelar={() => setBorrando(false)} onListo={() => { setBorrando(false); aviso('Datos de prueba borrados') }} />}
       {copia && (
@@ -161,9 +164,22 @@ function BorrarDatos({ onCancelar, onListo }: { onCancelar: () => void; onListo:
         if (!ok) return
         const ahora = Date.now()
         await aplicarBorradoLocal(ahora)
-        await guardarConfig({ borradoEn: ahora, efectivoContado: null })
+        await guardarConfig({ borradoEn: ahora, efectivoContado: null }, { texto: 'Borró los datos de prueba (pedidos y gastos)' })
         onListo()
       }}
     />
+  )
+}
+
+/** Sección discreta al final de Ajustes: se abre solo si la tocas. */
+function HistorialEscondido() {
+  const [abierto, setAbierto] = useState(false)
+  return (
+    <section className="historial-seccion">
+      <button className="enlace-discreto" aria-expanded={abierto} onClick={() => setAbierto(!abierto)}>
+        {abierto ? '▾' : '▸'} Historial de cambios
+      </button>
+      {abierto && <Historial />}
+    </section>
   )
 }

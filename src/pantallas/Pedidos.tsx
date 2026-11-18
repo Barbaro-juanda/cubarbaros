@@ -1,19 +1,20 @@
 import { useMemo, useState } from 'react'
 import { anularPedido, cambiarEstado, usePedidos } from '../datos/almacen'
 import { buscarPedidos } from '../logica/busqueda'
+import { numerarPedidos } from '../logica/numeracion'
 import { formatoCOP } from '../logica/dinero'
 import { fechaHoraColombia } from '../logica/exportar'
-import { ESTADOS, type EstadoPedido, type Pedido } from '../logica/tipos'
+import { ESTADOS, NOMBRE_ESTADO as NOMBRE, type EstadoPedido, type Pedido } from '../logica/tipos'
 import { Confirmar } from '../componentes/ui'
 
 type Filtro = 'todos' | EstadoPedido | 'anulados'
-const NOMBRE: Record<EstadoPedido, string> = { pendiente: 'Pendiente', preparando: 'Preparando', listo: 'Listo', entregado: 'Entregado' }
 const ACCION: Record<EstadoPedido, string> = { pendiente: 'Empezar a preparar', preparando: 'Marcar listo', listo: 'Marcar entregado', entregado: '' }
 
 export default function Pedidos() {
   const pedidos = usePedidos()
   const [filtro, setFiltro] = useState<Filtro>('todos')
   const [anulando, setAnulando] = useState<Pedido | null>(null)
+  const orden = useMemo(() => numerarPedidos(pedidos), [pedidos])
 
   const [consulta, setConsulta] = useState('')
   const buscando = consulta.trim().length > 0
@@ -72,7 +73,7 @@ export default function Pedidos() {
         return (
           <article key={p.id} className={'tarjeta pedido' + (p.anulado ? ' anulado' : '')}>
             <header className="pedido-cab">
-              <strong className="pedido-num">{p.numero}</strong>
+              <strong className="pedido-num">#{orden.get(p.id)}</strong>
               <span className="pedido-hora">{fechaHoraColombia(p.creadoEn).slice(11)}</span>
               {p.anulado ? <span className="etiqueta e-anulado">Anulado</span> : <span className={'etiqueta e-' + p.estado}>{NOMBRE[p.estado]}</span>}
             </header>
@@ -116,7 +117,7 @@ export default function Pedidos() {
 
       {anulando && (
         <Confirmar
-          titulo={`¿Anular ${anulando.numero}?`}
+          titulo={`¿Anular #${orden.get(anulando.id)}?`}
           mensaje="No contará en la contabilidad. Lo puedes restaurar después desde Anulados."
           textoConfirmar="Sí, anular"
           peligro

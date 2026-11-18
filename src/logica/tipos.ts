@@ -2,6 +2,16 @@
 
 export type EstadoPedido = 'pendiente' | 'preparando' | 'listo' | 'entregado'
 export const ESTADOS: EstadoPedido[] = ['pendiente', 'preparando', 'listo', 'entregado']
+export const NOMBRE_ESTADO: Record<EstadoPedido, string> = { pendiente: 'Pendiente', preparando: 'Preparando', listo: 'Listo', entregado: 'Entregado' }
+
+/** Una anotación del historial: qué pasó, cuándo y desde qué celular. */
+export interface Cambio {
+  ts: number
+  quien: string
+  texto: string
+  /** Si se repite seguido, se reemplaza en vez de agregar otra línea. */
+  clave?: string
+}
 
 export type Metodo = 'efectivo' | 'transferencia' | 'mixto'
 export const CANALES = ['Nequi', 'Bancolombia', 'Daviplata', 'Otro'] as const
@@ -44,6 +54,7 @@ export interface Pedido {
   estado: EstadoPedido
   anulado: boolean
   pago: Pago
+  historial?: Cambio[]
 }
 
 export const CATEGORIAS = [
@@ -72,6 +83,7 @@ export interface Gasto {
   categoria: Categoria
   origen: OrigenGasto
   creadoEn: number
+  historial?: Cambio[]
 }
 
 export interface Config {
@@ -83,6 +95,7 @@ export interface Config {
   efectivoContado: number | null
   /** Marca de tiempo del último "Borrar datos de prueba". */
   borradoEn: number
+  historial?: Cambio[]
 }
 
 export const CONFIG_INICIAL: Config = {

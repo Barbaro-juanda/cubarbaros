@@ -165,6 +165,15 @@ hr { border: 0; border-top: 2px dashed rgba(51, 18, 7, 0.25); margin: 10px 0; }
 /* Ajustes */
 .menu-fila { display: grid; grid-template-columns: 1fr 130px 48px; gap: 8px; align-items: center; margin-top: 8px; }
 
+/* Historial (escondido en Ajustes) */
+.historial-seccion { margin-top: 18px; padding: 0 4px; }
+.enlace-discreto { min-height: 48px; font-size: 16px; opacity: 0.7; text-decoration: underline; color: var(--cafe); }
+.historial { list-style: none; margin: 6px 0 0; padding: 0; background: var(--blanco); border-radius: var(--radio); }
+.historial li { padding: 10px 14px; border-bottom: 1px dashed rgba(51, 18, 7, 0.25); font-size: 18px; }
+.historial li:last-child { border-bottom: 0; }
+.historial-cab { display: flex; justify-content: space-between; gap: 10px; font-size: 16px; color: var(--azul); }
+.historial-cab strong { font-weight: 400; }
+
 /* Entrada */
 .entrada-pantalla { min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 24px; max-width: 420px; margin: 0 auto; text-align: center; }
 .entrada-pantalla h1 { font-size: 44px; color: var(--azul); }

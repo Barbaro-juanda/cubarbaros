@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { buscarPedidos } from '../src/logica/busqueda'
+import { conCambio } from '../src/logica/historial'
+import { numerarPedidos } from '../src/logica/numeracion'
 import { cobrarEfectivo, cobrarMixto, cobrarTransferencia, totalPedido } from '../src/logica/cobro'
 import { debeAplicarRemoto, horaColombia, resumir, ventasPorHora } from '../src/logica/contabilidad'
 import { formatoCOP, leerMonto, repartir } from '../src/logica/dinero'
@@ -243,5 +245,74 @@ describe('búsqueda de pedidos', () => {
   })
   it('sin coincidencias devuelve vacío', () => {
     expect(buscarPedidos(todos, 'zzzz')).toEqual([])
+  })
+})
+
+describe('numeración por hora', () => {
+  const t = Date.UTC(2026, 10, 21, 17, 0)
+  const mk = (id: string, ms: number, extra: Partial<Pedido> = {}) => efectivo(1, 20000, { id, creadoEn: t + ms, ...extra })
+  it('numera 1,2,3 por hora de cobro sin importar el celular', () => {
+    const j = mk('j1', 0, { dispositivo: 'Jero' })
+    const u = mk('u1', 5000, { dispositivo: 'Juanda' })
+    const k = mk('j2', 9000, { dispositivo: 'Jero' })
+    const m = numerarPedidos([k, j, u]) // desordenados a propósito
+    expect([m.get('j1'), m.get('u1'), m.get('j2')]).toEqual([1, 2, 3])
+  })
+  it('los anulados siguen contando (los demás números no se mueven)', () => {
+    const a = mk('a', 0)
+    const b = mk('b', 1000, { anulado: true })
+    const c = mk('c', 2000)
+    expect(numerarPedidos([a, b, c]).get('c')).toBe(3)
+  })
+  it('con la misma hora desempata por id, siempre igual', () => {
+    const x = mk('x', 0)
+    const y = mk('y', 0)
+    expect(numerarPedidos([y, x]).get('x')).toBe(1)
+    expect(numerarPedidos([x, y]).get('y')).toBe(2)
+  })
+  it('el buscador encuentra por el número visible (#2 o 2) y por celular', () => {
+    const j = mk('j1', 0, { dispositivo: 'Jero', numero: 'Jero-1' })
+    const u = mk('u1', 5000, { dispositivo: 'Juanda', numero: 'Juanda-1' })
+    expect(buscarPedidos([j, u], '#2').map((p) => p.id)).toEqual(['u1'])
+    expect(buscarPedidos([j, u], 'juanda').map((p) => p.id)).toEqual(['u1'])
+    expect(buscarPedidos([j, u], '#1').map((p) => p.id)).toEqual(['j1'])
+  })
+  it('el CSV usa el número visible y dice qué celular cobró', () => {
+    const j = mk('j1', 0, { dispositivo: 'Jero', numero: 'Jero-1' })
+    const u = mk('u1', 5000, { dispositivo: 'Juanda', numero: 'Juanda-1' })
+    const csv = generarCSV([u, j], [])
+    const filas = csv.split('\n')
+    expect(filas[1]).toContain('celular')
+    expect(filas[2].startsWith('1,')).toBe(true)
+    expect(filas[2].endsWith('Jero')).toBe(true)
+    expect(filas[3].startsWith('2,')).toBe(true)
+  })
+})
+
+describe('historial de cambios', () => {
+  const c = (ts: number, quien: string, texto: string, clave?: string) => ({ ts, quien, texto, clave })
+  it('agrega cambios en orden', () => {
+    const h = conCambio(conCambio(undefined, c(1, 'Jero', 'a')), c(2, 'Juanda', 'b'))
+    expect(h.map((x) => x.texto)).toEqual(['a', 'b'])
+  })
+  it('reemplaza el último si es la misma persona y el mismo tipo de cambio en menos de 2 minutos', () => {
+    let h = conCambio(undefined, c(0, 'Jero', 'Base: $5', 'base'))
+    h = conCambio(h, c(30_000, 'Jero', 'Base: $50', 'base'))
+    h = conCambio(h, c(60_000, 'Jero', 'Base: $50.000', 'base'))
+    expect(h.map((x) => x.texto)).toEqual(['Base: $50.000'])
+  })
+  it('no reemplaza si es otra persona, otro tipo o pasaron más de 2 minutos', () => {
+    let h = conCambio(undefined, c(0, 'Jero', 'x', 'base'))
+    h = conCambio(h, c(1000, 'Juanda', 'y', 'base'))
+    h = conCambio(h, c(2000, 'Juanda', 'z', 'pct'))
+    h = conCambio(h, c(2000 + 121_000, 'Juanda', 'w', 'pct'))
+    expect(h).toHaveLength(4)
+  })
+  it('sin clave nunca reemplaza y guarda solo los últimos', () => {
+    let h: ReturnType<typeof conCambio> = []
+    for (let i = 0; i < 50; i++) h = conCambio(h, c(i, 'Jero', 'e' + i), 40)
+    expect(h).toHaveLength(40)
+    expect(h[0].texto).toBe('e10')
+    expect(h[39].texto).toBe('e49')
   })
 })

@@ -48,7 +48,7 @@ export default function App() {
         <div className="titulo-app">
           <span className="nombre">Cubárbaros Caja</span>
           <span className="frase">
-            Celular de {letra}
+            {letra}
             <span className={'insignia ' + badge.clase} role="status">
               {badge.texto}
             </span>
@@ -148,7 +148,7 @@ function Entrada() {
 function ElegirLetra() {
   return (
     <Modal titulo="¿De quién es este celular?" cerrable={false}>
-      <p className="texto">Elige tu nombre. Sirve para que los números de pedido no se repitan (Jero-1, Juanda-1, Anye-1…). Cada celular debe tener un nombre distinto.</p>
+      <p className="texto">Elige tu nombre. Sirve para saber quién hizo cada cambio y para que los pedidos de dos celulares sin señal nunca se confundan. Cada celular debe tener un nombre distinto.</p>
       <div className="atajos">
         {PERSONAS.map((n) => (
           <button key={n} className="btn btn-chip grande-letra" onClick={() => escribirMeta('dispositivo', n)}>

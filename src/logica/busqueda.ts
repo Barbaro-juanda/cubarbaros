@@ -1,5 +1,6 @@
 import { formatoCOP } from './dinero'
 import { fechaHoraColombia } from './exportar'
+import { numerarPedidos } from './numeracion'
 import type { Pedido } from './tipos'
 
 /** Minúsculas y sin tildes: "Sándwich" y "sandwich" son lo mismo. */
@@ -8,11 +9,13 @@ export function normalizar(t: string): string {
 }
 
 /** Todo el texto por el que se puede encontrar un pedido. */
-function textoDe(p: Pedido): string {
+function textoDe(p: Pedido, orden: number | undefined): string {
   const estado = p.anulado ? 'anulado' : p.estado
   return normalizar(
     [
-      p.numero,
+      `#${orden ?? ''}`, // el número que se ve en pantalla
+      p.numero, // código interno (pedidos viejos: A-3)
+      p.dispositivo, // celular que lo cobró
       p.nota,
       p.lineas.map((l) => `${l.cantidad} ${l.nombre}`).join(' '),
       estado,
@@ -38,8 +41,9 @@ export function buscarPedidos(pedidos: Pedido[], consulta: string): Pedido[] {
     .map((w) => w.replace(/^\$/, ''))
     .filter(Boolean)
   if (!palabras.length) return pedidos
+  const orden = numerarPedidos(pedidos)
   return pedidos.filter((p) => {
-    const t = textoDe(p)
+    const t = textoDe(p, orden.get(p.id))
     return palabras.every((w) => t.includes(w) || (/^[\d.]+$/.test(w) && t.includes(w.replace(/\./g, ''))))
   })
 }

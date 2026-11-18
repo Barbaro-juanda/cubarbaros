@@ -1,4 +1,5 @@
 import { formatoCOP } from './dinero'
+import { numerarPedidos } from './numeracion'
 import type { Resumen } from './contabilidad'
 import { ORIGENES, type Config, type Gasto, type Pedido } from './tipos'
 
@@ -17,14 +18,15 @@ function celda(v: string | number | boolean | undefined): string {
 const fila = (v: (string | number | boolean | undefined)[]) => v.map(celda).join(',')
 
 export function generarCSV(pedidos: Pedido[], gastos: Gasto[]): string {
+  const numeros = numerarPedidos(pedidos)
   const orden = [...pedidos].sort((a, b) => a.creadoEn - b.creadoEn)
   const l: string[] = []
   l.push('PEDIDOS')
-  l.push(fila(['numero', 'fecha_hora', 'productos', 'total', 'estado', 'anulado', 'metodo', 'efectivo_recibido', 'devuelto', 'transferencia', 'canal', 'referencia', 'nota']))
+  l.push(fila(['numero', 'fecha_hora', 'productos', 'total', 'estado', 'anulado', 'metodo', 'efectivo_recibido', 'devuelto', 'transferencia', 'canal', 'referencia', 'nota', 'celular']))
   for (const p of orden) {
     l.push(
       fila([
-        p.numero,
+        numeros.get(p.id),
         fechaHoraColombia(p.creadoEn),
         p.lineas.map((x) => `${x.cantidad} x ${x.nombre}`).join(' | '),
         p.total,
@@ -37,6 +39,7 @@ export function generarCSV(pedidos: Pedido[], gastos: Gasto[]): string {
         p.pago.canal,
         p.pago.referencia,
         p.nota,
+        p.dispositivo,
       ]),
     )
   }

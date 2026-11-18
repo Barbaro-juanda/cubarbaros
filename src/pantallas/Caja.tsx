@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { crearPedido, useConfig } from '../datos/almacen'
+import { crearPedido, numeroVisible, useConfig } from '../datos/almacen'
 import { cobrarEfectivo, cobrarMixto, cobrarTransferencia, totalPedido } from '../logica/cobro'
 import { formatoCOP } from '../logica/dinero'
 import { CANALES, type Canal, type LineaPedido, type Metodo, type Pedido } from '../logica/tipos'
@@ -10,7 +10,7 @@ export default function Caja() {
   const [cant, setCant] = useState<Record<string, number>>({})
   const [nota, setNota] = useState('')
   const [cobrando, setCobrando] = useState(false)
-  const [listo, setListo] = useState<Pedido | null>(null)
+  const [listo, setListo] = useState<{ p: Pedido; n: number } | null>(null)
 
   const lineas: LineaPedido[] = useMemo(
     () => cfg.menu.filter((p) => (cant[p.id] ?? 0) > 0).map((p) => ({ productoId: p.id, nombre: p.nombre, precio: p.precio, cantidad: cant[p.id] })),
@@ -70,21 +70,21 @@ export default function Caja() {
             const p = await crearPedido(lineas, nota, pago)
             setCobrando(false)
             limpiar()
-            setListo(p)
+            setListo({ p, n: await numeroVisible(p.id) })
           }}
         />
       )}
       {listo && (
-        <Modal titulo={`Pedido ${listo.numero} guardado`} onCerrar={() => setListo(null)}>
-          {listo.pago.devuelto > 0 && (
+        <Modal titulo={`Pedido #${listo.n} guardado`} onCerrar={() => setListo(null)}>
+          {listo.p.pago.devuelto > 0 && (
             <div className="cambio-grande">
               <span>Devolver</span>
-              <strong>{formatoCOP(listo.pago.devuelto)}</strong>
+              <strong>{formatoCOP(listo.p.pago.devuelto)}</strong>
             </div>
           )}
-          {listo.pago.transferencia > 0 && <p className="aviso">Confirma que la plata llegó antes de entregar.</p>}
+          {listo.p.pago.transferencia > 0 && <p className="aviso">Confirma que la plata llegó antes de entregar.</p>}
           <p className="texto">
-            Total {formatoCOP(listo.total)} · {listo.pago.metodo}
+            Total {formatoCOP(listo.p.total)} · {listo.p.pago.metodo}
           </p>
           <button className="btn btn-principal" onClick={() => setListo(null)}>
             Listo, siguiente pedido
