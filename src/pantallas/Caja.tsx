@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { crearPedido, numeroVisible, useConfig } from '../datos/almacen'
+import { etiquetaPedido } from '../logica/numeracion'
 import { cobrarEfectivo, cobrarMixto, cobrarTransferencia, totalPedido } from '../logica/cobro'
 import { formatoCOP } from '../logica/dinero'
 import { CANALES, type Canal, type LineaPedido, type Metodo, type Pedido } from '../logica/tipos'
@@ -75,7 +76,7 @@ export default function Caja() {
         />
       )}
       {listo && (
-        <Modal titulo={`Pedido #${listo.n} guardado`} onCerrar={() => setListo(null)}>
+        <Modal titulo={`Pedido ${etiquetaPedido(listo.n)} guardado`} onCerrar={() => setListo(null)}>
           {listo.p.pago.devuelto > 0 && (
             <div className="cambio-grande">
               <span>Devolver</span>

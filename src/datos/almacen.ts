@@ -5,7 +5,7 @@ import { CONFIG_INICIAL, NOMBRE_ESTADO, type Cambio, type Config, type Gasto, ty
 import { totalPedido } from '../logica/cobro'
 import { formatoCOP } from '../logica/dinero'
 import { conCambio } from '../logica/historial'
-import { numerarPedidos } from '../logica/numeracion'
+import { etiquetaPedido, numerarPedidos } from '../logica/numeracion'
 
 export function useLive<T>(consulta: () => T | Promise<T>, inicial: T): T {
   const [valor, setValor] = useState<T>(inicial)
@@ -28,7 +28,7 @@ export function useConfig(): Config {
 }
 
 export interface EntradaHistorial extends Cambio {
-  /** A qué se refiere: "Pedido #3", "Gasto" o "Ajustes". */
+  /** A qué se refiere: "Pedido P-3", "Gasto" o "Ajustes". */
   sobre: string
 }
 
@@ -41,7 +41,7 @@ export const useHistorial = () =>
     for (const r of regs) {
       const hist = r.datos?.historial as Cambio[] | undefined
       if (!hist?.length) continue
-      const sobre = r.tipo === 'pedido' ? `Pedido #${orden.get(r.id) ?? '?'}` : r.tipo === 'gasto' ? 'Gasto' : 'Ajustes'
+      const sobre = r.tipo === 'pedido' ? `Pedido ${etiquetaPedido(orden.get(r.id))}` : r.tipo === 'gasto' ? 'Gasto' : 'Ajustes'
       for (const c of hist) out.push({ ...c, sobre })
     }
     return out.sort((a, b) => b.ts - a.ts).slice(0, 300)

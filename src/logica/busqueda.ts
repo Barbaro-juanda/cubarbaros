@@ -1,6 +1,6 @@
 import { formatoCOP } from './dinero'
 import { fechaHoraColombia } from './exportar'
-import { numerarPedidos } from './numeracion'
+import { etiquetaPedido, numerarPedidos } from './numeracion'
 import type { Pedido } from './tipos'
 
 /** Minúsculas y sin tildes: "Sándwich" y "sandwich" son lo mismo. */
@@ -13,7 +13,8 @@ function textoDe(p: Pedido, orden: number | undefined): string {
   const estado = p.anulado ? 'anulado' : p.estado
   return normalizar(
     [
-      `#${orden ?? ''}`, // el número que se ve en pantalla
+      etiquetaPedido(orden), // el número que se ve en pantalla (P-3)
+      `#${orden ?? ''}`, // también se encuentra escribiendo #3
       p.numero, // código interno (pedidos viejos: A-3)
       p.dispositivo, // celular que lo cobró
       p.nota,

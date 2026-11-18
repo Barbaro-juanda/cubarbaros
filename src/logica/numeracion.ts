@@ -10,3 +10,6 @@ export function numerarPedidos(pedidos: Pick<Pedido, 'id' | 'creadoEn'>[]): Map<
   const orden = [...pedidos].sort((a, b) => a.creadoEn - b.creadoEn || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
   return new Map(orden.map((p, i) => [p.id, i + 1]))
 }
+
+/** Cómo se escribe el número en pantalla: P-1, P-2, P-3… */
+export const etiquetaPedido = (n: number | undefined) => `P-${n ?? '?'}`

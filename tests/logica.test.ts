@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { buscarPedidos } from '../src/logica/busqueda'
 import { conCambio } from '../src/logica/historial'
-import { numerarPedidos } from '../src/logica/numeracion'
+import { etiquetaPedido, numerarPedidos } from '../src/logica/numeracion'
 import { cobrarEfectivo, cobrarMixto, cobrarTransferencia, totalPedido } from '../src/logica/cobro'
 import { debeAplicarRemoto, horaColombia, resumir, ventasPorHora } from '../src/logica/contabilidad'
 import { formatoCOP, leerMonto, repartir } from '../src/logica/dinero'
@@ -276,6 +276,9 @@ describe('numeración por hora', () => {
     expect(buscarPedidos([j, u], '#2').map((p) => p.id)).toEqual(['u1'])
     expect(buscarPedidos([j, u], 'juanda').map((p) => p.id)).toEqual(['u1'])
     expect(buscarPedidos([j, u], '#1').map((p) => p.id)).toEqual(['j1'])
+    expect(buscarPedidos([j, u], 'p-2').map((p) => p.id)).toEqual(['u1'])
+    expect(buscarPedidos([j, u], 'P-1').map((p) => p.id)).toEqual(['j1'])
+    expect(etiquetaPedido(7)).toBe('P-7')
   })
   it('el CSV usa el número visible y dice qué celular cobró', () => {
     const j = mk('j1', 0, { dispositivo: 'Jero', numero: 'Jero-1' })

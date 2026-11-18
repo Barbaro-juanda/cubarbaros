@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { anularPedido, cambiarEstado, usePedidos } from '../datos/almacen'
 import { buscarPedidos } from '../logica/busqueda'
-import { numerarPedidos } from '../logica/numeracion'
+import { etiquetaPedido, numerarPedidos } from '../logica/numeracion'
 import { formatoCOP } from '../logica/dinero'
 import { fechaHoraColombia } from '../logica/exportar'
 import { ESTADOS, NOMBRE_ESTADO as NOMBRE, type EstadoPedido, type Pedido } from '../logica/tipos'
@@ -73,7 +73,7 @@ export default function Pedidos() {
         return (
           <article key={p.id} className={'tarjeta pedido' + (p.anulado ? ' anulado' : '')}>
             <header className="pedido-cab">
-              <strong className="pedido-num">#{orden.get(p.id)}</strong>
+              <strong className="pedido-num">{etiquetaPedido(orden.get(p.id))}</strong>
               <span className="pedido-hora">{fechaHoraColombia(p.creadoEn).slice(11)}</span>
               {p.anulado ? <span className="etiqueta e-anulado">Anulado</span> : <span className={'etiqueta e-' + p.estado}>{NOMBRE[p.estado]}</span>}
             </header>
@@ -117,7 +117,7 @@ export default function Pedidos() {
 
       {anulando && (
         <Confirmar
-          titulo={`¿Anular #${orden.get(anulando.id)}?`}
+          titulo={`¿Anular ${etiquetaPedido(orden.get(anulando.id))}?`}
           mensaje="No contará en la contabilidad. Lo puedes restaurar después desde Anulados."
           textoConfirmar="Sí, anular"
           peligro

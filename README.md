@@ -12,7 +12,7 @@ Es una app web instalable (PWA) pensada para celular. Funciona **sin internet** 
 - Si dos celulares cambian lo mismo, **gana el cambio más reciente**.
 - El indicador del encabezado dice: **Sincronizado**, **N sin enviar**, **Sin conexión** o **Solo en este celular**.
 - **Nombre del celular:** cada celular elige su dueño (**Jero, Juanda o Anye**) la primera vez. Sirve para el historial de cambios y para que dos celulares sin señal nunca se confundan.
-- **Número de pedido:** se ve como **#1, #2, #3…**, uno solo para todos los celulares, ordenado por la hora en que se cobró. Los pedidos anulados también cuentan, para que los demás números no se muevan. Si un celular sin señal envía un pedido tarde, los números siguientes pueden correrse un puesto.
+- **Número de pedido:** se ve como **P-1, P-2, P-3…**, uno solo para todos los celulares, ordenado por la hora en que se cobró. Los pedidos anulados también cuentan, para que los demás números no se muevan. Si un celular sin señal envía un pedido tarde, los números siguientes pueden correrse un puesto.
 - **Historial de cambios:** en **Ajustes**, al final, hay una sección discreta "Historial de cambios" (se abre al tocarla). Muestra, del más reciente al más viejo, qué se cambió y **quién** (el nombre del celular): pedidos creados, cambios de estado, anulaciones, gastos, menú, base de caja, reparto y borrado de datos de prueba. Limitación: guarda los últimos 40 cambios de cada pedido, y si dos celulares cambian lo mismo exactamente al mismo tiempo puede perderse una línea.
 - **Acceso:** cada persona (tú, el socio, el cajero) tiene su propio correo y contraseña, que creas tú en Supabase. Nadie puede crearse una cuenta solo.
 
@@ -95,7 +95,7 @@ Abre la app desde el ícono, entra con tu correo y contraseña, elige de quién 
 4. Mira que el pedido de un celular aparezca en el otro (máx. ~10 s).
 5. **Modo avión** en un celular: cobra 2 pedidos. Debe decir "2 sin enviar". Quita el modo avión: debe pasar a "Sincronizado" y el otro celular debe verlos.
 6. Pasa un pedido por Pendiente → Preparando → Listo → Entregado, usa **Deshacer**, **Anula** uno y **restáuralo**.
-7. En **Pedidos**, prueba el **buscador**: escribe un nombre de la nota, un número (#3), un monto (35.800) o un método (nequi); borra con la ✕.
+7. En **Pedidos**, prueba el **buscador**: escribe un nombre de la nota, un número (P-3), un monto (35.800) o un método (nequi); borra con la ✕.
 8. En Contabilidad: registra el stand ($150.000), un gasto con plata de la caja, escribe el efectivo contado y revisa el **cuadre**. Copia el **resumen de WhatsApp** y pégalo en un chat.
 9. Cierra la app del todo y ábrela con el celular en modo avión: debe abrir y mostrar los pedidos.
 10. **Ajustes → Borrar datos de prueba** (escribe BORRAR). Verifica que ambos celulares quedan vacíos y que la numeración vuelve a 1.
