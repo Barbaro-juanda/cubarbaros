@@ -1,7 +1,7 @@
 import { liveQuery } from 'dexie'
 import { useEffect, useState } from 'react'
 import { db, leerMeta, type Registro } from './db'
-import { CONFIG_INICIAL, NOMBRE_ESTADO, type Cambio, type Config, type Gasto, type EstadoPedido, type LineaPedido, type Pago, type Pedido } from '../logica/tipos'
+import { CONFIG_INICIAL, MENU_VERSION, NOMBRE_ESTADO, type Cambio, type Config, type Gasto, type EstadoPedido, type LineaPedido, type Pago, type Pedido } from '../logica/tipos'
 import { totalPedido } from '../logica/cobro'
 import { formatoCOP } from '../logica/dinero'
 import { conCambio } from '../logica/historial'
@@ -59,7 +59,10 @@ export const useMeta = <T,>(clave: string, porDefecto: T) => useLive<T | undefin
 
 export async function leerConfig(): Promise<Config> {
   const r = await db.registros.get('config')
-  return { ...CONFIG_INICIAL, ...(r?.datos ?? {}) }
+  const d = r?.datos ?? {}
+  // Un menú guardado con versión vieja se cambia por el menú base nuevo.
+  const menu = (d.menuVersion ?? 0) >= MENU_VERSION && d.menu ? d.menu : CONFIG_INICIAL.menu
+  return { ...CONFIG_INICIAL, ...d, menu, menuVersion: MENU_VERSION }
 }
 
 const nuevoId = () => crypto.randomUUID()

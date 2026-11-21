@@ -42,16 +42,8 @@ export default function Contabilidad() {
       </section>
 
       <section className="tarjeta">
-        <h3>Utilidad y reparto</h3>
+        <h3>Utilidad</h3>
         <Fila t="Utilidad (ventas − gastos)" v={formatoCOP(r.utilidad)} grande />
-        <p className="propuesta">Reparto propuesta, ajustable (en Ajustes)</p>
-        <Fila t={`Yo (${cfg.porcentajeDueno}%)`} v={formatoCOP(r.repartoDueno)} />
-        <Fila t={`Socio (${100 - cfg.porcentajeDueno}%)`} v={formatoCOP(r.repartoSocio)} />
-        {(r.gastosPorOrigen.yo > 0 || r.gastosPorOrigen.socio > 0) && (
-          <p className="pequeno">
-            Ya pusieron de su bolsillo: yo {formatoCOP(r.gastosPorOrigen.yo)} · socio {formatoCOP(r.gastosPorOrigen.socio)}
-          </p>
-        )}
       </section>
 
       <section className="tarjeta">

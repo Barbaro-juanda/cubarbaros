@@ -65,7 +65,6 @@ export function generarResumenWhatsApp(r: Resumen, cfg: Config): string {
   l.push('')
   l.push(`Gastos: ${formatoCOP(r.gastos)}`)
   l.push(`*Utilidad: ${formatoCOP(r.utilidad)}*`)
-  l.push(`Reparto (${cfg.porcentajeDueno}/${100 - cfg.porcentajeDueno}): ${formatoCOP(r.repartoDueno)} / ${formatoCOP(r.repartoSocio)}`)
   l.push('')
   l.push(`Cuadre de caja: esperado ${formatoCOP(r.efectivoEsperado)}`)
   if (r.diferenciaCuadre !== null && cfg.efectivoContado !== null) {

@@ -59,18 +59,8 @@ export default function Ajustes({ onEntrarCodigo }: { onEntrarCodigo: () => void
       </section>
 
       <section className="tarjeta">
-        <h3>Caja y reparto</h3>
+        <h3>Caja</h3>
         <CampoMonto etiqueta="Base inicial de efectivo" valor={cfg.baseCaja} onCambio={(n) => guardarConfig({ baseCaja: n }, { texto: `Cambió la base de caja a ${formatoCOP(n)}`, clave: 'base' })} />
-        <label className="campo">
-          <span className="campo-et">Porcentaje para mí (dueño) · propuesta, ajustable</span>
-          <input
-            className="entrada"
-            inputMode="numeric"
-            value={String(cfg.porcentajeDueno)}
-            onChange={(e) => guardarConfig({ porcentajeDueno: Math.min(100, leerMonto(e.target.value)) }, { texto: `Cambió el reparto: ${Math.min(100, leerMonto(e.target.value))}% para el dueño`, clave: 'pct' })}
-          />
-        </label>
-        <p className="pequeno">Socio: {100 - cfg.porcentajeDueno}%</p>
       </section>
 
       <section className="tarjeta">

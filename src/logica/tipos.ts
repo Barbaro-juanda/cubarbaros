@@ -96,10 +96,22 @@ export interface Config {
   /** Marca de tiempo del último "Borrar datos de prueba". */
   borradoEn: number
   historial?: Cambio[]
+  menuVersion?: number
 }
 
+/** Sube este número cuando cambie el menú base: los celulares que tengan uno viejo pasan al nuevo. */
+export const MENU_VERSION = 2
+export const MENU_INICIAL: Producto[] = [
+  { id: 'sandwich-cubano', nombre: 'Sándwich cubano', precio: 17900 },
+  { id: 'coca-cola', nombre: 'Coca-Cola', precio: 3900 },
+  { id: 'hatsu', nombre: 'Hatsu', precio: 3900 },
+  { id: 'papas', nombre: 'Papas', precio: 4500 },
+  { id: 'combo', nombre: 'Combo: sándwich, papas y gaseosa', precio: 23900 },
+]
+
 export const CONFIG_INICIAL: Config = {
-  menu: [{ id: 'sandwich-cubano', nombre: 'Sándwich cubano', precio: 17900 }],
+  menu: MENU_INICIAL,
+  menuVersion: MENU_VERSION,
   baseCaja: 0,
   porcentajeDueno: 70,
   efectivoContado: null,
