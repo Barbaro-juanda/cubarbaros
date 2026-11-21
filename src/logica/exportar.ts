@@ -54,7 +54,7 @@ export function generarCSV(pedidos: Pedido[], gastos: Gasto[]): string {
 
 export function generarResumenWhatsApp(r: Resumen, cfg: Config): string {
   const l: string[] = []
-  l.push('*Cubárbaros – Resumen del día*')
+  l.push('*Cubárbaros – Lo que vendimos hoy*')
   l.push('')
   l.push(`Ventas: ${formatoCOP(r.ventas)} (${r.numPedidos} pedidos)`)
   for (const u of r.unidades) l.push(`• ${u.nombre}: ${u.cantidad}`)
@@ -63,8 +63,6 @@ export function generarResumenWhatsApp(r: Resumen, cfg: Config): string {
   l.push(`Transferencias: ${formatoCOP(r.transferencias)}`)
   for (const [canal, v] of Object.entries(r.transferenciasPorCanal)) l.push(`• ${canal}: ${formatoCOP(v)}`)
   l.push('')
-  l.push(`Gastos: ${formatoCOP(r.gastos)}`)
-  l.push(`*Utilidad: ${formatoCOP(r.utilidad)}*`)
   l.push('')
   l.push(`Cuadre de caja: esperado ${formatoCOP(r.efectivoEsperado)}`)
   if (r.diferenciaCuadre !== null && cfg.efectivoContado !== null) {

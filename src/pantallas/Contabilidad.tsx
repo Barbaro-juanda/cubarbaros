@@ -1,16 +1,18 @@
 import { useMemo, useState } from 'react'
-import { agregarGasto, borrarGasto, guardarConfig, useConfig, useGastos, usePedidos } from '../datos/almacen'
+import { guardarConfig, useConfig, usePedidos } from '../datos/almacen'
 import { resumir, ventasPorHora } from '../logica/contabilidad'
 import { formatoCOP } from '../logica/dinero'
-import { fechaHoraColombia, generarCSV, generarResumenWhatsApp } from '../logica/exportar'
-import { CATEGORIAS, ORIGENES, type Categoria, type Gasto, type OrigenGasto } from '../logica/tipos'
-import { CampoMonto, Confirmar, Modal, copiarTexto } from '../componentes/ui'
+import { generarCSV, generarResumenWhatsApp } from '../logica/exportar'
+import type { Gasto } from '../logica/tipos'
+import { CampoMonto, Modal, copiarTexto } from '../componentes/ui'
+
+/** La app ya no maneja gastos: el resumen solo cuenta lo vendido. */
+const SIN_GASTOS: Gasto[] = []
 
 export default function Contabilidad() {
   const pedidos = usePedidos()
-  const gastos = useGastos()
   const cfg = useConfig()
-  const r = useMemo(() => resumir(pedidos, gastos, cfg), [pedidos, gastos, cfg])
+  const r = useMemo(() => resumir(pedidos, SIN_GASTOS, cfg), [pedidos, cfg])
   const horas = useMemo(() => ventasPorHora(pedidos), [pedidos])
   const [manual, setManual] = useState<{ titulo: string; texto: string } | null>(null)
   const [copiado, setCopiado] = useState('')
@@ -25,7 +27,7 @@ export default function Contabilidad() {
   return (
     <div className="pantalla">
       <section className="tarjeta">
-        <h3>Resumen</h3>
+        <h3>Lo que vendimos hoy</h3>
         <Fila t="Ventas totales" v={formatoCOP(r.ventas)} grande />
         <Fila t="Pedidos" v={String(r.numPedidos)} />
         {r.unidades.map((u) => (
@@ -37,20 +39,12 @@ export default function Contabilidad() {
         {Object.entries(r.transferenciasPorCanal).map(([c, v]) => (
           <Fila key={c} t={`• ${c}`} v={formatoCOP(v)} />
         ))}
-        <hr />
-        <Fila t="Gastos" v={formatoCOP(r.gastos)} />
-      </section>
-
-      <section className="tarjeta">
-        <h3>Utilidad</h3>
-        <Fila t="Utilidad (ventas − gastos)" v={formatoCOP(r.utilidad)} grande />
       </section>
 
       <section className="tarjeta">
         <h3>Cuadre de caja</h3>
         <Fila t="Base inicial" v={formatoCOP(cfg.baseCaja)} />
         <Fila t="+ Efectivo neto de ventas" v={formatoCOP(r.efectivoNeto)} />
-        <Fila t="− Gastos pagados de la caja" v={formatoCOP(r.gastosPorOrigen.caja)} />
         <Fila t="Efectivo esperado" v={formatoCOP(r.efectivoEsperado)} grande />
         <CampoMonto etiqueta="Efectivo contado" valor={cfg.efectivoContado ?? 0} onCambio={(n) => guardarConfig({ efectivoContado: n || null }, { texto: n ? `Contó el efectivo: ${formatoCOP(n)}` : 'Borró el efectivo contado', clave: 'contado' })} />
         {r.diferenciaCuadre !== null && (
@@ -60,9 +54,6 @@ export default function Contabilidad() {
         )}
       </section>
 
-      <FormGastos />
-      <ListaGastos gastos={gastos} />
-
       <section className="tarjeta">
         <h3>Ventas por hora</h3>
         <Grafico horas={horas} />
@@ -71,8 +62,8 @@ export default function Contabilidad() {
       <section className="tarjeta">
         <h3>Exportar</h3>
         <div className="fila-botones col">
-          <button className="btn btn-sec" onClick={() => copiar('CSV', generarCSV(pedidos, gastos))}>
-            Copiar CSV (pedidos y gastos)
+          <button className="btn btn-sec" onClick={() => copiar('CSV', generarCSV(pedidos, SIN_GASTOS))}>
+            Copiar CSV (pedidos)
           </button>
           <button className="btn btn-sec" onClick={() => copiar('Resumen', generarResumenWhatsApp(r, cfg))}>
             Copiar resumen para WhatsApp
@@ -97,104 +88,6 @@ function Fila({ t, v, grande }: { t: string; v: string; grande?: boolean }) {
       <span>{t}</span>
       <strong>{v}</strong>
     </div>
-  )
-}
-
-function FormGastos() {
-  const [concepto, setConcepto] = useState('')
-  const [monto, setMonto] = useState(0)
-  const [cat, setCat] = useState<Categoria>('Ingredientes')
-  const [origen, setOrigen] = useState<OrigenGasto>('caja')
-  const valido = concepto.trim().length > 0 && monto > 0
-  return (
-    <section className="tarjeta">
-      <h3>Registrar gasto</h3>
-      <button
-        className="btn btn-chip"
-        onClick={() => {
-          setConcepto('Stand')
-          setMonto(150000)
-          setCat('Stand')
-        }}
-      >
-        Atajo: stand $150.000
-      </button>
-      <label className="campo">
-        <span className="campo-et">Concepto</span>
-        <input className="entrada" value={concepto} onChange={(e) => setConcepto(e.target.value)} placeholder="Ej: pan, jamón, hielo" />
-      </label>
-      <CampoMonto etiqueta="Monto" valor={monto} onCambio={setMonto} />
-      <label className="campo">
-        <span className="campo-et">Categoría</span>
-        <select className="entrada" value={cat} onChange={(e) => setCat(e.target.value as Categoria)}>
-          {CATEGORIAS.map((c) => (
-            <option key={c}>{c}</option>
-          ))}
-        </select>
-      </label>
-      <label className="campo">
-        <span className="campo-et">¿De dónde salió la plata?</span>
-        <select className="entrada" value={origen} onChange={(e) => setOrigen(e.target.value as OrigenGasto)}>
-          {ORIGENES.map((o) => (
-            <option key={o.valor} value={o.valor}>
-              {o.texto}
-            </option>
-          ))}
-        </select>
-      </label>
-      <button
-        className="btn btn-principal"
-        disabled={!valido}
-        onClick={async () => {
-          await agregarGasto({ concepto: concepto.trim(), monto, categoria: cat, origen })
-          setConcepto('')
-          setMonto(0)
-        }}
-      >
-        Guardar gasto
-      </button>
-    </section>
-  )
-}
-
-function ListaGastos({ gastos }: { gastos: Gasto[] }) {
-  const [borrando, setBorrando] = useState<Gasto | null>(null)
-  if (!gastos.length) return null
-  return (
-    <section className="tarjeta">
-      <h3>Gastos registrados</h3>
-      {[...gastos]
-        .sort((a, b) => b.creadoEn - a.creadoEn)
-        .map((g) => (
-          <div key={g.id} className="gasto">
-            <div>
-              <strong>{g.concepto}</strong>
-              <div className="pequeno">
-                {g.categoria} · {ORIGENES.find((o) => o.valor === g.origen)?.texto} · {fechaHoraColombia(g.creadoEn).slice(11)}
-              </div>
-            </div>
-            <div className="gasto-der">
-              <strong>{formatoCOP(g.monto)}</strong>
-              <button className="enlace-peligro" onClick={() => setBorrando(g)}>
-                Borrar
-              </button>
-            </div>
-          </div>
-        ))}
-      {borrando && (
-        <Confirmar
-          titulo="¿Borrar este gasto?"
-          mensaje={`${borrando.concepto} · ${formatoCOP(borrando.monto)}`}
-          textoConfirmar="Sí, borrar"
-          peligro
-          onCancelar={() => setBorrando(null)}
-          onConfirmar={() => {
-            void borrarGasto(borrando.id)
-            setBorrando(null)
-          }}
-        />
-      )}
-    </section>
   )
 }
 
